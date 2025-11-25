@@ -1,7 +1,8 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Role, Batch, Order, Alert } from '../types';
-import { hospitalBatches as mockBatches, orders as mockOrders, alerts as mockAlerts } from '../data/mockData';
+import { Role, Order, Alert } from '../types';
+import { orders as mockOrders, alerts as mockAlerts } from '../data/mockData';
 import authReducer from './authSlice';
+import inventoryReducer, { setSearchQuery } from './inventorySlice';
 
 // --- Slices ---
 
@@ -25,29 +26,7 @@ const roleSlice = createSlice({
 });
 
 export const { setRole } = roleSlice.actions;
-
-// Inventory Slice
-interface InventoryState {
-    batches: Batch[];
-    searchQuery: string;
-}
-
-const initialInventoryState: InventoryState = {
-    batches: mockBatches,
-    searchQuery: '',
-};
-
-const inventorySlice = createSlice({
-    name: 'inventory',
-    initialState: initialInventoryState,
-    reducers: {
-        setSearchQuery: (state, action: PayloadAction<string>) => {
-            state.searchQuery = action.payload;
-        },
-    },
-});
-
-export const { setSearchQuery } = inventorySlice.actions;
+export { setSearchQuery }; // Re-export from inventorySlice
 
 // Orders Slice
 interface OrdersState {
@@ -100,7 +79,7 @@ export const store = configureStore({
     reducer: {
         auth: authReducer,
         role: roleSlice.reducer,
-        inventory: inventorySlice.reducer,
+        inventory: inventoryReducer,
         orders: ordersSlice.reducer,
         alerts: alertsSlice.reducer,
     },

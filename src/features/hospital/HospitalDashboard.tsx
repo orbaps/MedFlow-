@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { setSearchQuery } from '../../store/index';
+import { fetchMedicines } from '../../store/inventorySlice';
 import { KPICard } from '../../components/shared/KPICard';
 import { StatusBadge } from '../../components/shared/StatusBadge';
 import { Search, MoreVertical, AlertTriangle, AlertCircle, Plus, Package, RefreshCw } from 'lucide-react';
 
 export const HospitalDashboard: React.FC = () => {
     const dispatch = useAppDispatch();
-    const { batches, searchQuery } = useAppSelector((state) => state.inventory);
+    const { batches, searchQuery, loading } = useAppSelector((state) => state.inventory);
     const [activeTab, setActiveTab] = useState('All');
+
+    useEffect(() => {
+        dispatch(fetchMedicines());
+    }, [dispatch]);
 
     // Filter logic
     const filteredBatches = batches.filter(batch => {
@@ -76,38 +81,52 @@ export const HospitalDashboard: React.FC = () => {
 
                     {/* Table */}
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
-                                <tr>
-                                    <th className="px-6 py-3 font-medium">Batch No</th>
-                                    <th className="px-6 py-3 font-medium">Medicine ID</th>
-                                    <th className="px-6 py-3 font-medium text-right">Quantity</th>
-                                    <th className="px-6 py-3 font-medium">Expiry</th>
-                                    <th className="px-6 py-3 font-medium">Location</th>
-                                    <th className="px-6 py-3 font-medium">Status</th>
-                                    <th className="px-6 py-3 font-medium text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {filteredBatches.slice(0, 10).map((batch) => (
-                                    <tr key={batch.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-gray-900">{batch.batchNumber}</td>
-                                        <td className="px-6 py-4 text-gray-600">{batch.medicineId}</td>
-                                        <td className="px-6 py-4 text-gray-600 text-right">{batch.quantity} units</td>
-                                        <td className="px-6 py-4 text-gray-600">{batch.expiryDate}</td>
-                                        <td className="px-6 py-4 text-gray-600">{batch.location}</td>
-                                        <td className="px-6 py-4">
-                                            <StatusBadge status={batch.status} />
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <button className="text-gray-400 hover:text-gray-600">
-                                                <MoreVertical size={18} />
-                                            </button>
-                                        </td>
+                        {loading ? (
+                            <div className="flex justify-center items-center py-12">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                            </div>
+                        ) : (
+                            <table className="w-full text-left text-sm">
+                                <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
+                                    <tr>
+                                        <th className="px-6 py-3 font-medium">Batch No</th>
+                                        <th className="px-6 py-3 font-medium">Medicine ID</th>
+                                        <th className="px-6 py-3 font-medium text-right">Quantity</th>
+                                        <th className="px-6 py-3 font-medium">Expiry</th>
+                                        <th className="px-6 py-3 font-medium">Location</th>
+                                        <th className="px-6 py-3 font-medium">Status</th>
+                                        <th className="px-6 py-3 font-medium text-center">Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {filteredBatches.length > 0 ? (
+                                        filteredBatches.slice(0, 10).map((batch) => (
+                                            <tr key={batch.id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4 font-medium text-gray-900">{batch.batchNumber}</td>
+                                                <td className="px-6 py-4 text-gray-600">{batch.medicineId}</td>
+                                                <td className="px-6 py-4 text-gray-600 text-right">{batch.quantity} units</td>
+                                                <td className="px-6 py-4 text-gray-600">{batch.expiryDate}</td>
+                                                <td className="px-6 py-4 text-gray-600">{batch.location}</td>
+                                                <td className="px-6 py-4">
+                                                    <StatusBadge status={batch.status} />
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <button className="text-gray-400 hover:text-gray-600">
+                                                        <MoreVertical size={18} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                                                No inventory found matching your criteria.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
 
                     {/* Pagination (Mock) */}
