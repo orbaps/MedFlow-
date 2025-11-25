@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../api/axiosClient';
 import { Order } from '../types';
 
@@ -17,13 +17,8 @@ const initialState: OrdersState = {
 // Async Thunks
 export const fetchOrders = createAsyncThunk(
     'orders/fetchOrders',
-    async (role: string, { rejectWithValue, getState }) => {
+    async (role: string, { rejectWithValue }) => {
         try {
-            // In a real app, we might get entityId from the auth state
-            // const state = getState() as RootState;
-            // const entityId = state.auth.user?.entityId;
-
-            // For now, we'll just fetch all orders or filter by role if the API supports it
             const response = await api.get('/orders', { params: { role } });
             return response.data;
         } catch (error: any) {
