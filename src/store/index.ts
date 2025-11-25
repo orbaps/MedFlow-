@@ -1,8 +1,9 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Role, Order, Alert } from '../types';
-import { orders as mockOrders, alerts as mockAlerts } from '../data/mockData';
+import { Role, Alert } from '../types';
+import { alerts as mockAlerts } from '../data/mockData';
 import authReducer from './authSlice';
 import inventoryReducer, { setSearchQuery } from './inventorySlice';
+import ordersReducer, { updateOrderStatusAPI } from './ordersSlice';
 
 // --- Slices ---
 
@@ -26,31 +27,8 @@ const roleSlice = createSlice({
 });
 
 export const { setRole } = roleSlice.actions;
-export { setSearchQuery }; // Re-export from inventorySlice
-
-// Orders Slice
-interface OrdersState {
-    orders: Order[];
-}
-
-const initialOrdersState: OrdersState = {
-    orders: mockOrders,
-};
-
-const ordersSlice = createSlice({
-    name: 'orders',
-    initialState: initialOrdersState,
-    reducers: {
-        updateOrderStatus: (state, action: PayloadAction<{ id: string; status: Order['status'] }>) => {
-            const order = state.orders.find(o => o.id === action.payload.id);
-            if (order) {
-                order.status = action.payload.status;
-            }
-        },
-    },
-});
-
-export const { updateOrderStatus } = ordersSlice.actions;
+export { setSearchQuery };
+export { updateOrderStatusAPI };
 
 // Alerts Slice
 interface AlertsState {
@@ -80,7 +58,7 @@ export const store = configureStore({
         auth: authReducer,
         role: roleSlice.reducer,
         inventory: inventoryReducer,
-        orders: ordersSlice.reducer,
+        orders: ordersReducer,
         alerts: alertsSlice.reducer,
     },
 });

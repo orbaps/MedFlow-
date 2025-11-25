@@ -2,7 +2,7 @@ import React from 'react';
 import { clsx } from 'clsx';
 
 interface StatusBadgeProps {
-    status: 'In Stock' | 'Low Stock' | 'Critical' | 'Expired' | 'Healthy' | 'Warning' | 'New' | 'Confirmed' | 'Dispatched' | 'Delivered' | 'Urgent' | 'Normal' | 'Routine';
+    status: 'In Stock' | 'Low Stock' | 'Critical' | 'Expired' | 'Healthy' | 'Warning' | 'New' | 'Confirmed' | 'Dispatched' | 'Delivered' | 'Urgent' | 'Normal' | 'Routine' | 'Cancelled';
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
@@ -20,6 +20,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
         'Critical': 'bg-red-100 text-red-800',
         'Expired': 'bg-red-100 text-red-800',
         'Urgent': 'bg-red-100 text-red-800',
+        'Cancelled': 'bg-red-100 text-red-800',
     };
 
     return (

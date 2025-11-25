@@ -53,7 +53,7 @@ export interface Order {
     hospitalName: string;
     medicineName: string;
     quantity: number;
-    status: 'New' | 'Confirmed' | 'Dispatched' | 'Delivered';
+    status: 'New' | 'Confirmed' | 'Dispatched' | 'Delivered' | 'Cancelled';
     priority: 'Urgent' | 'Normal' | 'Routine';
     date: string;
 }

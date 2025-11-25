@@ -1,12 +1,22 @@
-import React from 'react';
-import { useAppSelector } from '../../store/hooks';
+import React, { useEffect } from 'react';
+import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import { fetchOrders, updateOrderStatusAPI } from '../../store/ordersSlice';
 import { KPICard } from '../../components/shared/KPICard';
 import { StatusBadge } from '../../components/shared/StatusBadge';
 import { Package, Truck, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export const RetailerDashboard: React.FC = () => {
-    const { orders } = useAppSelector((state) => state.orders);
+    const dispatch = useAppDispatch();
+    const { orders, loading } = useAppSelector((state) => state.orders);
+
+    useEffect(() => {
+        dispatch(fetchOrders('retailer'));
+    }, [dispatch]);
+
+    const handleStatusUpdate = (orderId: string, status: 'Confirmed' | 'Cancelled') => {
+        dispatch(updateOrderStatusAPI({ orderId, status }));
+    };
 
     // KPI Calcs (Mock)
     const pendingOrders = orders.filter(o => o.status === 'New').length;
@@ -34,40 +44,54 @@ export const RetailerDashboard: React.FC = () => {
                         <h2 className="text-xl font-bold text-gray-900">Incoming Orders</h2>
                     </div>
                     <div className="divide-y divide-gray-200">
-                        {orders.slice(0, 5).map(order => (
-                            <div key={order.id} className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-gray-50 transition-colors">
-                                <div className="flex items-start gap-4">
-                                    <div className={`p-3 rounded-full ${order.priority === 'Urgent' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                                        <Package size={24} />
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-bold text-gray-900">{order.hospitalName}</h3>
-                                            <StatusBadge status={order.priority} />
-                                        </div>
-                                        <p className="text-sm text-gray-600 mt-1">
-                                            <span className="font-medium">{order.medicineName}</span> • {order.quantity} units
-                                        </p>
-                                        <p className="text-xs text-gray-500 mt-1">Ordered: {order.date}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-3 w-full sm:w-auto">
-                                    {order.status === 'New' ? (
-                                        <>
-                                            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">
-                                                <CheckCircle size={16} /> Confirm
-                                            </button>
-                                            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">
-                                                <XCircle size={16} /> Reject
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <StatusBadge status={order.status} />
-                                    )}
-                                </div>
+                        {loading ? (
+                            <div className="flex justify-center items-center py-12">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
                             </div>
-                        ))}
+                        ) : orders.length > 0 ? (
+                            orders.slice(0, 5).map(order => (
+                                <div key={order.id} className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-gray-50 transition-colors">
+                                    <div className="flex items-start gap-4">
+                                        <div className={`p-3 rounded-full ${order.priority === 'Urgent' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                                            <Package size={24} />
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-bold text-gray-900">{order.hospitalName}</h3>
+                                                <StatusBadge status={order.priority} />
+                                            </div>
+                                            <p className="text-sm text-gray-600 mt-1">
+                                                <span className="font-medium">{order.medicineName}</span> • {order.quantity} units
+                                            </p>
+                                            <p className="text-xs text-gray-500 mt-1">Ordered: {order.date}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                                        {order.status === 'New' ? (
+                                            <>
+                                                <button
+                                                    onClick={() => handleStatusUpdate(order.id, 'Confirmed')}
+                                                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+                                                >
+                                                    <CheckCircle size={16} /> Confirm
+                                                </button>
+                                                <button
+                                                    onClick={() => handleStatusUpdate(order.id, 'Cancelled')}
+                                                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50"
+                                                >
+                                                    <XCircle size={16} /> Reject
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <StatusBadge status={order.status} />
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="p-6 text-center text-gray-500">No orders found.</div>
+                        )}
                     </div>
                     <div className="px-6 py-4 border-t border-gray-200 text-center">
                         <button className="text-blue-600 font-medium text-sm hover:underline">View All Orders</button>
