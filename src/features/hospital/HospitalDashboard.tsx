@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { setSearchQuery } from '../../store/index';
 import { fetchMedicines } from '../../store/inventorySlice';
+import { fetchDemandForecast, fetchExpiryRisk } from '../../store/aiSlice';
 import { KPICard } from '../../components/shared/KPICard';
 import { StatusBadge } from '../../components/shared/StatusBadge';
 import { Search, MoreVertical, AlertTriangle, AlertCircle, Plus, Package, RefreshCw } from 'lucide-react';
@@ -9,10 +10,14 @@ import { Search, MoreVertical, AlertTriangle, AlertCircle, Plus, Package, Refres
 export const HospitalDashboard: React.FC = () => {
     const dispatch = useAppDispatch();
     const { batches, searchQuery, loading } = useAppSelector((state) => state.inventory);
+    const { forecast, expiryRisk } = useAppSelector((state) => state.ai);
     const [activeTab, setActiveTab] = useState('All');
 
     useEffect(() => {
         dispatch(fetchMedicines());
+        // Mock IDs for demo
+        dispatch(fetchDemandForecast('MED-1'));
+        dispatch(fetchExpiryRisk('HOSP-1'));
     }, [dispatch]);
 
     // Filter logic
@@ -168,7 +173,7 @@ export const HospitalDashboard: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Insight 2: Demand Forecast */}
+                        {/* Insight 2: Demand Forecast (Dynamic) */}
                         <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-xl border border-blue-100 shadow-sm">
                             <div className="flex items-center gap-2 mb-3">
                                 <span className="p-2 bg-blue-100 text-blue-600 rounded-lg">
@@ -176,15 +181,23 @@ export const HospitalDashboard: React.FC = () => {
                                 </span>
                                 <h3 className="font-bold text-gray-900">Demand Forecast</h3>
                             </div>
-                            <p className="text-sm text-gray-600 mb-3">
-                                <strong>Insulin Glargine</strong> consumption is trending up <strong>18%</strong> month-over-month. Current stock may deplete in 6 days.
-                            </p>
-                            <button className="w-full py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                                Auto-Generate Reorder (80 units)
-                            </button>
+                            {forecast ? (
+                                <>
+                                    <p className="text-sm text-gray-600 mb-3">
+                                        <strong>{forecast.medicineId}</strong> consumption is trending up <strong>{forecast.confidenceScore}%</strong>. Predicted demand: {forecast.predictedDemand} units.
+                                    </p>
+                                    <button className="w-full py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                        Auto-Generate Reorder
+                                    </button>
+                                </>
+                            ) : (
+                                <div className="flex justify-center py-4">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Insight 3: Expiry Optimization */}
+                        {/* Insight 3: Expiry Optimization (Dynamic) */}
                         <div className="bg-gradient-to-br from-orange-50 to-white p-6 rounded-xl border border-orange-100 shadow-sm">
                             <div className="flex items-center gap-2 mb-3">
                                 <span className="p-2 bg-orange-100 text-orange-600 rounded-lg">
@@ -192,17 +205,29 @@ export const HospitalDashboard: React.FC = () => {
                                 </span>
                                 <h3 className="font-bold text-gray-900">Expiry Risk Optimization</h3>
                             </div>
-                            <p className="text-sm text-gray-600 mb-3">
-                                4 batches of <strong>High-Value Antibiotics</strong> expiring in 15 days. Total value: ₹2.8 Lakhs.
-                            </p>
-                            <div className="flex gap-2">
-                                <button className="flex-1 py-2 bg-white border border-orange-200 text-orange-700 text-sm font-medium rounded-lg hover:bg-orange-50 transition-colors">
-                                    Transfer
-                                </button>
-                                <button className="flex-1 py-2 bg-white border border-orange-200 text-orange-700 text-sm font-medium rounded-lg hover:bg-orange-50 transition-colors">
-                                    Discount
-                                </button>
-                            </div>
+                            {expiryRisk ? (
+                                <>
+                                    <p className="text-sm text-gray-600 mb-3">
+                                        {expiryRisk.riskLevel === 'High' ? (
+                                            <><strong>High Risk:</strong> {expiryRisk.expiringBatches.length} batches expiring soon. Value: ₹{expiryRisk.totalValue}.</>
+                                        ) : (
+                                            <>Risk Level: {expiryRisk.riskLevel}. {expiryRisk.expiringBatches.length} batches expiring.</>
+                                        )}
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <button className="flex-1 py-2 bg-white border border-orange-200 text-orange-700 text-sm font-medium rounded-lg hover:bg-orange-50 transition-colors">
+                                            Transfer
+                                        </button>
+                                        <button className="flex-1 py-2 bg-white border border-orange-200 text-orange-700 text-sm font-medium rounded-lg hover:bg-orange-50 transition-colors">
+                                            Discount
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="flex justify-center py-4">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-600"></div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

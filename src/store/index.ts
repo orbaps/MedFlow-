@@ -51,7 +51,9 @@ const alertsSlice = createSlice({
 
 export const { addAlert } = alertsSlice.actions;
 
-// --- Store Configuration ---
+import aiReducer from './aiSlice';
+
+// ...
 
 export const store = configureStore({
     reducer: {
@@ -60,6 +62,7 @@ export const store = configureStore({
         inventory: inventoryReducer,
         orders: ordersReducer,
         alerts: alertsSlice.reducer,
+        ai: aiReducer,
     },
 });
 
