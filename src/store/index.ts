@@ -1,16 +1,17 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Role, Medicine, Batch, Order, Alert } from '../types';
-import { hospitalBatches, orders, alerts, medicines } from '../data/mockData';
+import { Role, Batch, Order, Alert } from '../types';
+import { hospitalBatches as mockBatches, orders as mockOrders, alerts as mockAlerts } from '../data/mockData';
+import authReducer from './authSlice';
 
-// 1. Role Slice
+// --- Slices ---
+
+// Role Slice
 interface RoleState {
     currentRole: Role;
-    entityName: string;
 }
 
 const initialRoleState: RoleState = {
-    currentRole: 'hospital',
-    entityName: 'City General Hospital',
+    currentRole: 'hospital', // Default
 };
 
 const roleSlice = createSlice({
@@ -19,23 +20,20 @@ const roleSlice = createSlice({
     reducers: {
         setRole: (state, action: PayloadAction<Role>) => {
             state.currentRole = action.payload;
-            if (action.payload === 'hospital') state.entityName = 'City General Hospital';
-            else if (action.payload === 'retailer') state.entityName = 'MedPlus Pharma';
-            else if (action.payload === 'super_admin') state.entityName = 'Network Command Center';
         },
     },
 });
 
-// 2. Inventory Slice
+export const { setRole } = roleSlice.actions;
+
+// Inventory Slice
 interface InventoryState {
-    medicines: Medicine[];
     batches: Batch[];
     searchQuery: string;
 }
 
 const initialInventoryState: InventoryState = {
-    medicines: medicines,
-    batches: hospitalBatches,
+    batches: mockBatches,
     searchQuery: '',
 };
 
@@ -49,38 +47,44 @@ const inventorySlice = createSlice({
     },
 });
 
-// 3. Order Slice
-interface OrderState {
+export const { setSearchQuery } = inventorySlice.actions;
+
+// Orders Slice
+interface OrdersState {
     orders: Order[];
 }
 
-const initialOrderState: OrderState = {
-    orders: orders,
+const initialOrdersState: OrdersState = {
+    orders: mockOrders,
 };
 
-const orderSlice = createSlice({
+const ordersSlice = createSlice({
     name: 'orders',
-    initialState: initialOrderState,
+    initialState: initialOrdersState,
     reducers: {
         updateOrderStatus: (state, action: PayloadAction<{ id: string; status: Order['status'] }>) => {
             const order = state.orders.find(o => o.id === action.payload.id);
-            if (order) order.status = action.payload.status;
+            if (order) {
+                order.status = action.payload.status;
+            }
         },
     },
 });
 
-// 4. Alert Slice
-interface AlertState {
+export const { updateOrderStatus } = ordersSlice.actions;
+
+// Alerts Slice
+interface AlertsState {
     alerts: Alert[];
 }
 
-const initialAlertState: AlertState = {
-    alerts: alerts,
+const initialAlertsState: AlertsState = {
+    alerts: mockAlerts,
 };
 
-const alertSlice = createSlice({
+const alertsSlice = createSlice({
     name: 'alerts',
-    initialState: initialAlertState,
+    initialState: initialAlertsState,
     reducers: {
         addAlert: (state, action: PayloadAction<Alert>) => {
             state.alerts.unshift(action.payload);
@@ -88,20 +92,19 @@ const alertSlice = createSlice({
     },
 });
 
-// Store Config
+export const { addAlert } = alertsSlice.actions;
+
+// --- Store Configuration ---
+
 export const store = configureStore({
     reducer: {
+        auth: authReducer,
         role: roleSlice.reducer,
         inventory: inventorySlice.reducer,
-        orders: orderSlice.reducer,
-        alerts: alertSlice.reducer,
+        orders: ordersSlice.reducer,
+        alerts: alertsSlice.reducer,
     },
 });
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
-
-export const { setRole } = roleSlice.actions;
-export const { setSearchQuery } = inventorySlice.actions;
-export const { updateOrderStatus } = orderSlice.actions;
-export const { addAlert } = alertSlice.actions;

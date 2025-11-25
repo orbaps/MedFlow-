@@ -1,15 +1,21 @@
 import React from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { setRole } from '../../store/index';
-import { Bell, Search, ChevronDown, Building2, Store } from 'lucide-react';
+import { logout } from '../../store/authSlice';
+import { Bell, Search, ChevronDown, Building2, Store, LogOut } from 'lucide-react';
 import { Role } from '../../types';
 
 export const Header: React.FC = () => {
     const dispatch = useAppDispatch();
-    const { currentRole, entityName } = useAppSelector((state) => state.role);
+    const { currentRole } = useAppSelector((state) => state.role);
+    const { user } = useAppSelector((state) => state.auth);
 
     const handleRoleChange = (role: Role) => {
         dispatch(setRole(role));
+    };
+
+    const handleLogout = () => {
+        dispatch(logout());
     };
 
     return (
@@ -60,8 +66,11 @@ export const Header: React.FC = () => {
                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" />
                     </div>
                     <div className="hidden md:block text-sm">
-                        <p className="font-medium text-gray-700">{entityName}</p>
+                        <p className="font-medium text-gray-700">{user?.email || 'User'}</p>
                     </div>
+                    <button onClick={handleLogout} className="ml-2 p-1 text-gray-500 hover:text-red-600 transition-colors" title="Logout">
+                        <LogOut size={18} />
+                    </button>
                 </div>
             </div>
         </header>
