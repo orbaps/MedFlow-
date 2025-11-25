@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         String   // "HOSPITAL_MANAGER", "RETAILER", "ADMIN"
+  entityId     String?  // ID of Hospital or Retailer
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Hospital {
+  id        String   @id @default(uuid())
+  name      String
+  location  String
+  type      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Retailer {
+  id        String   @id @default(uuid())
+  name      String
+  location  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Medicine {
+  id           String   @id @default(uuid())
+  name         String
+  genericName  String
+  category     String
+  manufacturer String
+  batches      Batch[]
+  orders       Order[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Batch {
+  id          String   @id @default(uuid())
+  batchNumber String
+  quantity    Int
+  expiryDate  DateTime
+  location    String   // "Main Pharmacy", "ICU", etc.
+  status      String   // "In Stock", "Low Stock", "Critical"
+  medicine    Medicine @relation(fields: [medicineId], references: [id])
+  medicineId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Order {
+  id           String   @id @default(uuid())
+  fromEntityId String   // Hospital ID
+  toEntityId   String   // Retailer ID
+  quantity     Int
+  status       String   // "New", "Confirmed", "Dispatched", "Delivered"
+  priority     String   // "Normal", "Urgent"
+  medicine     Medicine @relation(fields: [medicineId], references: [id])
+  medicineId   String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Alert {
+  id        String   @id @default(uuid())
+  type      String   // "Stockout", "Expiry", "LowStock"
+  message   String
+  entityId  String   // Hospital or Retailer ID
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
